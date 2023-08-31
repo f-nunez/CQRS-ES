@@ -1,0 +1,112 @@
+version: "3.9"
+
+name: cqrses
+
+services:
+  cqrses-rabbitmq:
+    image: masstransit/rabbitmq:3.9.7
+    container_name: cqrses-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - 5672:5672
+      - 15672:15672
+    restart: on-failure
+
+  cqrses-command-eventstore:
+    container_name: cqrses-command-eventstore
+    image: eventstore/eventstore:22.10.2-buster-slim
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+      - EVENTSTORE_EXT_TCP_PORT=1113
+      - EVENTSTORE_HTTP_PORT=2113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+    ports:
+      - 1113:1113
+      - 2113:2113
+    restart: on-failure
+    volumes:
+      - type: volume
+        source: cqrses-command-eventstore-volume-data
+        target: /var/lib/eventstore
+      - type: volume
+        source: cqrses-command-eventstore-volume-logs
+        target: /var/log/eventstore
+
+  cqrses-command-sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: cqrses-command-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: "CqrsEventStore123!"
+    ports:
+      - 14330:1433
+    restart: on-failure
+
+  cqrses-command-postgresql:
+    image: postgres:15.4-bullseye
+    container_name: cqrses-command-postgresql
+    environment:
+      POSTGRES_USER: "sa"
+      POSTGRES_PASSWORD: "CqrsEventStore123!"
+    ports:
+      - 54320:5432
+    restart: always
+
+  cqrses-command-mariadb:
+    image: mariadb:11.0.3
+    container_name: cqrses-command-mariadb
+    restart: always
+    environment:
+      MARIADB_USER: "sa"
+      MARIADB_PASSWORD: "CqrsEventStore123!"
+      MARIADB_ROOT_PASSWORD: "CqrsEventStore123!"
+    ports:
+      - 33060:3306
+
+  cqrses-command-mongodb:
+    image: mongo:7.0.0-rc3-jammy
+    container_name: cqrses-command-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 27017:27017
+    restart: on-failure
+    volumes:
+      - "cqrses-command-mongodb-data-volume:/data/db"
+
+  cqrses-query-mongodb:
+    image: mongo:7.0.0-rc3-jammy
+    container_name: cqrses-query-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 27018:27017
+    restart: on-failure
+    volumes:
+      - "cqrses-query-mongodb-data-volume:/data/db"
+
+  cqrses-adminer:
+    image: adminer
+    container_name: cqrses-adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  cqrses-command-eventstore-volume-data:
+    driver: local
+  cqrses-command-eventstore-volume-logs:
+    driver: local
+  cqrses-command-mongodb-data-volume:
+    driver: local
+  cqrses-query-mongodb-data-volume:
+    driver: local
