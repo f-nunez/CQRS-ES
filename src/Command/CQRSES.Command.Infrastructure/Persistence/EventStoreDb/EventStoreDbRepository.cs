@@ -27,14 +27,21 @@ public class EventStoreDbRepository : IEventStoreDbRepository
         }
     }
 
-    public async Task<List<ResolvedEvent>> ReadStreamEventsAsync(string streamName)
+    public async Task<List<ResolvedEvent>?> ReadStreamEventsAsync(string streamName)
     {
         var result = _eventStoreClient.ReadStreamAsync(
             Direction.Forwards,
             streamName,
             StreamPosition.Start
         );
-        
-        return await result.ToListAsync();
+
+        try
+        {
+            return await result.ToListAsync();
+        }
+        catch (StreamNotFoundException)
+        {
+            return null;
+        }
     }
 }
