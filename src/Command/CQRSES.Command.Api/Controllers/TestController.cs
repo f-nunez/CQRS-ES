@@ -35,7 +35,11 @@ public class TestController : ControllerBase
     public async Task<IActionResult> EditDescription(string id, string description, long expectedVersion)
     {
         var res = await _eventStore.ReadStreamEventsAsync(id);
+
+        if (res is null) throw new ArgumentNullException(nameof(res), "Not found.");
+
         res.UpdateDescription(description);
+
         await _eventStore.AppendEventsAsync(res, expectedVersion);
 
         return Ok(res);
@@ -45,7 +49,11 @@ public class TestController : ControllerBase
     public async Task<IActionResult> EditTitle(string id, string title, long expectedVersion)
     {
         var res = await _eventStore.ReadStreamEventsAsync(id);
+
+        if (res is null) throw new ArgumentNullException(nameof(res), "Not found.");
+
         res.UpdateTitle(title);
+
         await _eventStore.AppendEventsAsync(res, expectedVersion);
 
         return Ok(res);
@@ -55,8 +63,13 @@ public class TestController : ControllerBase
     public async Task<IActionResult> EditTitleAndDescription(string id, string title, string description, long expectedVersion)
     {
         var res = await _eventStore.ReadStreamEventsAsync(id);
+
+        if (res is null) throw new ArgumentNullException(nameof(res), "Not found.");
+
         res.UpdateTitle(title);
+
         res.UpdateDescription(description);
+
         await _eventStore.AppendEventsAsync(res, expectedVersion);
 
         return Ok(res);
@@ -66,6 +79,8 @@ public class TestController : ControllerBase
     public async Task<IActionResult> Read(string id)
     {
         var res = await _eventStore.ReadStreamEventsAsync(id);
+
+        if (res is null) throw new ArgumentNullException(nameof(res), "Not found.");
 
         return Ok(res);
     }

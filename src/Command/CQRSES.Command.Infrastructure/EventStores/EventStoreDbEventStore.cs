@@ -47,11 +47,13 @@ public class EventStoreDbEventStore<T> : IEventStore<T> where T : IAggregateRoot
         aggregateRoot.ClearChanges();
     }
 
-    public async Task<T> ReadStreamEventsAsync<TId>(TId id)
+    public async Task<T?> ReadStreamEventsAsync<TId>(TId id)
     {
         string streamName = GetStreamName(id);
 
         var events = await _repository.ReadStreamEventsAsync(streamName);
+
+        if (events is null || events.Count == 0) return default;
 
         var storedEvents = events.Select(Deserialze);
 

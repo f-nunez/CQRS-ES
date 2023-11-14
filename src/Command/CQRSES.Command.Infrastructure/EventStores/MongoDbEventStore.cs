@@ -29,7 +29,7 @@ public class MongoDbEventStore<T> : IEventStore<T> where T : IAggregateRoot
 
         var events = await _repository.ReadStreamEventsAsync(streamName);
 
-        if (expectedVersion != -1 && events[^1].Version != expectedVersion)
+        if (expectedVersion != -1 && events != null && events.Count > 0 && events[^1].Version != expectedVersion)
             throw new Exception($"Append failed due to expected version. Stream: {streamName}, Expected version: {expectedVersion}, Actual version: {events[^1].Version}");
 
         foreach (var change in changes)
@@ -50,14 +50,13 @@ public class MongoDbEventStore<T> : IEventStore<T> where T : IAggregateRoot
         aggregateRoot.ClearChanges();
     }
 
-    public async Task<T> ReadStreamEventsAsync<TId>(TId id)
+    public async Task<T?> ReadStreamEventsAsync<TId>(TId id)
     {
         string streamName = GetStreamName(id);
 
         var events = await _repository.ReadStreamEventsAsync(streamName);
 
-        if (events == null || !events.Any())
-            throw new ArgumentNullException("Incorrect post ID provided!");
+        if (events is null || events.Count == 0) return default;
 
         var aggregate = (T)Activator.CreateInstance(typeof(T), true)!;
 

@@ -18,7 +18,7 @@ public class EntityFrameworkCoreRepository : IEntityFrameworkCoreRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<StreamState>> ReadStreamEventsAsync(string streamName)
+    public async Task<List<StreamState>?> ReadStreamEventsAsync(string streamName)
     {
         var query = from streamState in _dbContext.StreamStates
                     where streamState.StreamName == streamName

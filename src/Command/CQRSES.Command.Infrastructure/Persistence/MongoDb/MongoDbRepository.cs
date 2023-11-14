@@ -18,7 +18,7 @@ public class MongoDbRepository : IMongoDbRepository
             .ConfigureAwait(false);
     }
 
-    public async Task<List<StreamState>> ReadStreamEventsAsync(string streamName)
+    public async Task<List<StreamState>?> ReadStreamEventsAsync(string streamName)
     {
         return await _mongoCollection
             .Find(x => x.StreamName == streamName)
