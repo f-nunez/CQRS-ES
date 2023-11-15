@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CQRSES.Command.Infrastructure.Persistence.EntityFrameworkCore;
 
-public class AppointmentTypeConfiguration : IEntityTypeConfiguration<StreamState>
+public class StreamStateConfiguration : IEntityTypeConfiguration<StreamState>
 {
     public void Configure(EntityTypeBuilder<StreamState> builder)
     {
